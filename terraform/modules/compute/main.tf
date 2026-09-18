@@ -34,8 +34,9 @@ resource "aws_launch_template" "app" {
   )
 
   metadata_options {
-    http_endpoint = "enabled"
-    http_tokens   = "required"
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"  # IMDSv2 enforced ✅
+    http_put_response_hop_limit = 1           # restrict to instance only
   }
 
   block_device_mappings {
@@ -51,7 +52,6 @@ resource "aws_launch_template" "app" {
 
   tag_specifications {
     resource_type = "instance"
-
     tags = {
       Name    = "${var.project_name}-app"
       Project = var.project_name
@@ -60,7 +60,6 @@ resource "aws_launch_template" "app" {
 
   tag_specifications {
     resource_type = "volume"
-
     tags = {
       Project = var.project_name
     }
@@ -75,6 +74,12 @@ resource "aws_lb" "app" {
   security_groups = [var.alb_sg_id]
   subnets         = var.public_subnet_ids
 
+  # Prevent accidental deletion
+  enable_deletion_protection = true
+
+  # Drop malformed HTTP headers (security best practice)
+  drop_invalid_header_fields = true
+
   tags = {
     Name    = "${var.project_name}-alb"
     Project = var.project_name
@@ -88,6 +93,10 @@ resource "aws_lb_target_group" "app" {
 
   target_type = "instance"
   vpc_id      = var.vpc_id
+
+  # ✅ KEY FIX: Reduce from default 300s → 30s
+  # This is what was causing the slow Deploy stage in CodeDeploy blue/green
+  deregistration_delay = 30
 
   health_check {
     enabled             = true
@@ -138,6 +147,14 @@ resource "aws_autoscaling_group" "app" {
     version = "$Latest"
   }
 
+  # Allow time for instances to warm up before scaling again
+  instance_refresh {
+    strategy = "Rolling"
+    preferences {
+      min_healthy_percentage = 50
+    }
+  }
+
   tag {
     key                 = "Name"
     value               = "${var.project_name}-app"
@@ -163,4 +180,7 @@ resource "aws_autoscaling_policy" "cpu" {
       predefined_metric_type = "ASGAverageCPUUtilization"
     }
   }
+
+  # Prevent scaling actions during instance warmup
+  estimated_instance_warmup = 120
 }
