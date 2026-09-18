@@ -27,10 +27,5 @@ systemctl enable --now codedeploy-agent
 
 # Just make sure the target directory exists so CodeDeploy has somewhere
 # to place files on first deploy.
-# <<<<<<< HEAD
-# mkdir -p /opt/aws-ha-app
-# =======
-# mkdir -p /opt/aws-ha-app
-# >>>>>>> a345b9b1381985e94e017d0cfd244b8a244dcf97
 mkdir -p /opt/aws-ha-app
 

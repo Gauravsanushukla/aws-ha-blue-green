@@ -4,7 +4,6 @@ data "aws_ami" "amazon_linux" {
 
   filter {
     name   = "name"
-    # values = ["al2023-ami-*-x86_64"]
     values = ["al2023-ami-2023.*-x86_64"]
   }
 
@@ -107,7 +106,7 @@ resource "aws_lb_target_group" "app" {
     interval            = 30
     timeout             = 5
     healthy_threshold   = 2
-    unhealthy_threshold = 2
+    unhealthy_threshold = 3
   }
 
   tags = {
@@ -141,19 +140,11 @@ resource "aws_autoscaling_group" "app" {
   ]
 
   health_check_type         = "ELB"
-  health_check_grace_period = 120
+  health_check_grace_period = 300
 
   launch_template {
     id      = aws_launch_template.app.id
     version = "$Latest"
-  }
-
-  # Allow time for instances to warm up before scaling again
-  instance_refresh {
-    strategy = "Rolling"
-    preferences {
-      min_healthy_percentage = 50
-    }
   }
 
   tag {
