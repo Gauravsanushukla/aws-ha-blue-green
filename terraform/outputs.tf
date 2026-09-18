@@ -1,0 +1,57 @@
+output "vpc_id" {
+  value = module.networking.vpc_id
+}
+
+output "public_subnet_ids" {
+  value = module.networking.public_subnet_ids
+}
+
+output "private_subnet_ids" {
+  value = module.networking.private_subnet_ids
+}
+output "alb_dns_name" {
+  value = module.compute.alb_dns_name
+}
+output "alb_sg_id" {
+  value = module.networking.alb_sg_id
+}
+
+output "ec2_sg_id" {
+  value = module.networking.ec2_sg_id
+}
+
+output "rds_sg_id" {
+  value = module.networking.rds_sg_id
+}
+//iam outputs
+output "ec2_instance_profile_name" {
+  value = module.iam.ec2_instance_profile_name
+}
+
+output "codebuild_role_arn" {
+  value = module.iam.codebuild_role_arn
+}
+
+output "codedeploy_role_arn" {
+  value = module.iam.codedeploy_role_arn
+}
+
+output "codepipeline_role_arn" {
+  value = module.iam.codepipeline_role_arn
+}
+
+output "codebuild_project_name" {
+  value = module.cicd.codebuild_project_name
+}
+
+output "codedeploy_application_name" {
+  value = module.cicd.codedeploy_application_name
+}
+
+output "codedeploy_deployment_group_name" {
+  value = module.cicd.codedeploy_deployment_group_name
+}
+
+output "codepipeline_name" {
+  value = module.cicd.codepipeline_name
+}
